@@ -5,8 +5,11 @@ This little program takes a picture as commandline parameter and converts it int
 Give it an image as parameter and enjoy^^
 
 Usage: [Options] image
+
 -r        rotate image CW instead of CCW(default)
+
 -h        flip image horizontally befor rotation
+
 -v        flip image vertically befor rotation
 
 
