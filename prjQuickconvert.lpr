@@ -14,6 +14,8 @@ var
   flip: boolean;
   mirror_horzontal: boolean;
   mirror_vertical: boolean;
+  gamma2, gamma3: boolean;
+  pix: PBGRAPixel;
 
 procedure decodeParams(raw: string);
 var
@@ -28,6 +30,10 @@ begin
       mirror_horzontal:= true;
     'v':
       mirror_vertical:= true;
+    'g2':
+      gamma2:= true;
+    'g3':
+      gamma3:= true;
   end;
 end;
 
@@ -46,15 +52,19 @@ begin
   WriteLn('-r        rotate image CW instead of CCW(default)');
   WriteLn('-h        flip image horizontally befor rotation');
   WriteLn('-v        flip image vertically befor rotation');
+  WriteLn('-g2       do gamma = 2 correction');
+  WriteLn('-g3       do gamma = 3 correction');
 end;
 
 begin
-  WriteLn('Welcome to Quickconvert v0.1!');
+  WriteLn('Welcome to Quickconvert v0.2!');
   WriteLn('The easy tool to convert images to Pixelstick format!' + #10);
 
   flip:= false;
   mirror_horzontal:= false;
   mirror_vertical:= false;
+  gamma2:= false;
+  gamma3:= false;
   source:= '';
   target:= '';
 
@@ -120,15 +130,49 @@ begin
     begin
       Write('Rotating image right... ');
       transform.RotateDeg(90);
+      WriteLn('done.');
     end
     else
     begin
       Write('Rotating image left... ');
       transform.RotateDeg(-90);
+      WriteLn('done.');
     end;
 
     image_out.Fill(transform);
-    WriteLn('done.');
+
+    if gamma2 then
+    begin
+      Write('Doing gamma = 2... ');
+      pix:= image_out.Data;
+
+      for i:= image_out.NbPixels-1 downto 0 do
+      begin
+        pix^.red:= pix^.red*pix^.red div 255;
+        pix^.green:= pix^.green*pix^.green div 255;
+        pix^.blue:= pix^.blue*pix^.blue div 255;
+        inc(pix);
+      end;
+      image_out.InvalidateBitmap;
+
+      WriteLn('done.');
+    end
+    else if gamma3 then
+    begin
+      Write('Doing gamma = 3... ');
+      pix:= image_out.Data;
+
+      for i:= image_out.NbPixels-1 downto 0 do
+      begin
+        pix^.red:= pix^.red*pix^.red*pix^.red div 65025;
+        pix^.green:= pix^.green*pix^.green*pix^.green div 65025;
+        pix^.blue:= pix^.blue*pix^.blue*pix^.blue div 65025;
+        inc(pix);
+      end;
+      image_out.InvalidateBitmap;
+
+      WriteLn('done.');
+    end;
 
     image_out.SaveToFile(target);
     transform.Destroy;
